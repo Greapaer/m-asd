@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎰 Reaper Casino</title>
+<style>
+body {
+    margin:0;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background: linear-gradient(135deg,#0b0c10,#1f2833);
+    color:white;
+}
+
+/* ===== Приветственная надпись ===== */
+.welcome {
+    text-align:center;
+    margin-top:80px;
+    font-size:48px;
+    font-weight:bold;
+    color:#ff4b2b;
+    text-shadow: 2px 2px 15px rgba(255,75,43,0.6), 0 0 20px rgba(255,75,43,0.4);
+}
+.welcome span {
+    color:#ffb347;
+    text-shadow: 2px 2px 20px rgba(255,179,71,0.5);
+}
+
+/* ===== Ссылки на игры ===== */
+.navLinks {
+    position:absolute;
+    top:15px;
+    left:15px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+.navLinks a {
+    display:block;
+    padding:8px 16px;
+    border-radius:12px;
+    background: #555;
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+    text-align:center;
+    transition:0.2s;
+}
+.navLinks a:hover { background:#777; }
+
+/* ===== Баланс ===== */
+.balanceDisplay {
+    position:absolute;
+    right:15px;
+    top:15px;
+    padding:6px 12px;
+    border-radius:10px;
+    background: rgba(255,255,255,0.15);
+    color:white;
+    font-weight:bold;
+    font-size:1.2em;
+    text-align:center;
+}
+
+/* ===== Контейнер игр ===== */
+.container {
+    max-width:1000px;
+    margin:40px auto 60px auto;
+    display:flex;
+    flex-wrap:wrap;
+    gap:30px;
+    justify-content:center;
+}
+.card {
+    background: rgba(255,255,255,0.05);
+    border-radius:15px;
+    padding:25px;
+    text-align:center;
+    width:280px;
+    transition: all 0.3s;
+    box-shadow:0 5px 15px rgba(0,0,0,0.4);
+}
+.card:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow:0 10px 25px rgba(0,0,0,0.6);
+}
+.card h2 { font-size:24px; margin-bottom:10px; }
+.card p { font-size:15px; margin-bottom:15px; }
+.card a {
+    display:inline-block;
+    padding:10px 20px;
+    border-radius:12px;
+    text-decoration:none;
+    background:#555;
+    color:white;
+    font-weight:bold;
+    transition:0.2s;
+}
+.card a:hover { background:#777; }
+
+/* ===== Адаптив ===== */
+@media screen and (max-width:900px){
+    .container { flex-direction:column; align-items:center; }
+    .welcome { font-size:36px; margin-top:60px; }
+}
+</style>
+</head>
+<body>
+
+
+<div class="balanceDisplay">Баланс: <span id="balance">10000</span></div>
+
+<div class="welcome">Добро пожаловать в <span>Reaper Casino</span>!</div>
+
+<div class="container">
+    <div class="card">
+        <h2>🎡 Рулетка</h2>
+        <p>Ставьте на числа и цвет. Испытайте удачу!</p>
+        <a href="roulette.html">Играть</a>
+    </div>
+    <div class="card">
+        <h2>🃏 Ultimate Texas Hold'em</h2>
+        <p>Проверяйте свои покерные навыки и собирайте комбинации!</p>
+        <a href="poker.html">Играть</a>
+    </div>
+    <div class="card">
+        <h2>🂡 Blackjack</h2>
+        <p>Обходите дилера и выигрывайте максимально!</p>
+        <a href="blackjack.html">Играть</a>
+    </div>
+</div>
+
+<script>
+let balance = 10000;
+function updateBalance(){ document.getElementById("balance").innerText = balance; }
+updateBalance();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reaper Casino - Ultimate Texas Hold'em</title>
+<style>
+body {
+    margin:0;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background: linear-gradient(135deg,#0b0c10,#1f2833);
+    color:white;
+}
+header {
+    padding:15px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+}
+.navLinks {
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+.navLinks a {
+    display:block;
+    padding:6px 12px;
+    border-radius:8px;
+    background:#555;
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+    text-align:center;
+    font-size:2em;
+    transition:0.2s;
+}
+.navLinks a:hover { background:#777; }
+.balanceDisplay {
+    padding:6px 12px;
+    border-radius:10px;
+    background: rgba(255,255,255,0.15);
+    color:white;
+    font-weight:bold;
+    font-size:1.2em;
+    text-align:center;
+}
+#addFundsBtn {
+    position:fixed;
+    right:15px;
+    bottom:15px;
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    background:#28a745;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 3px 10px rgba(0,0,0,0.4);
+    transition:0.2s;
+}
+#addFundsBtn:hover { background:#1e7e34; }
+
+.container {
+    max-width:800px;
+    margin:0px auto 30px auto;
+    background: rgba(0,0,0,0.5);
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.6);
+    text-align:center;
+}
+button {
+    font-size:1em;
+    padding:10px;
+    border-radius:10px;
+    border:none;
+    margin:5px;
+    cursor:pointer;
+    background:#555;
+    color:white;
+    font-weight:bold;
+    transition:0.2s;
+    box-shadow:0 3px 10px rgba(0,0,0,0.4);
+}
+button:hover { background:#777; }
+
+#playerWinText, #playerComboText, #botComboText {
+    margin-top:10px;
+    font-size:1.2em;
+    font-weight:bold;
+}
+
+.cardsContainer {
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin:10px 0;
+    flex-wrap:wrap;
+}
+.card {
+    width: 75px;
+    height: 110px;
+    border-radius: 14px;
+    background: linear-gradient(145deg,#fff,#eee); /* светлый фон */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: #333; /* черные карты — темно-серый */
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    position: relative;
+}
+
+.card.red { color: red; } /* красные масти ♥♦ остаются красными */
+
+.card .corner, .card .center {
+    color: inherit; /* наследуем цвет карты */
+}
+
+/* Цвета комбинаций */
+.win { color: #28a745; }   /* зеленый — лучшая комбинация */
+.lose { color: #e53935; }  /* красный — проигрыш */
+.tie { color: #f39c12; }   /* оранжевый — ничья */
+
+
+.card .corner.top-left {
+    position:absolute;
+    top:5px;
+    left:5px;
+    text-align:left;
+}
+
+.card .corner.bottom-right {
+    position:absolute;
+    bottom:5px;
+    right:5px;
+    transform: rotate(180deg);
+    text-align:right;
+}
+
+.card .center {
+    font-size:36px;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:1;
+}
+
+/* Анимация переворота карты */
+.card.flip {
+    background: linear-gradient(145deg,#eee,#ccc); /* светлая обратная сторона */
+    color: black;
+}
+
+.card:hover {
+    transform: scale(1.1) rotateY(0deg);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+}
+
+.welcome {
+    text-align:center;
+    font-size:48px;
+    font-weight:bold;
+    color:#ff4b2b;
+    text-shadow: 2px 2px 15px rgba(255,75,43,0.6), 0 0 20px rgba(255,75,43,0.4);
+}
+.welcome span {
+    color:#ffb347;
+    text-shadow: 2px 2px 20px rgba(255,179,71,0.5);
+}
+
+.navBalanceWrapper {
+    display:flex;
+    width:100%;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+}
+
+#actionButtons button {
+    min-width:100px;
+}
+
+@media screen and (max-width:768px){
+    .container { width:90%; padding:15px; }
+    input, button { font-size:0.9em; padding:8px; }
+    .balanceDisplay { font-size:1em; padding:5px 10px; }
+    .navLinks a { padding:5px 10px; font-size:1.2em; }
+    .welcome { font-size:36px; }
+}
+@media screen and (max-width:480px){
+    input, button { font-size:0.8em; padding:6px; }
+    .balanceDisplay { font-size:0.9em; padding:4px 8px; }
+    .navLinks a { padding:4px 8px; font-size:1em; }
+    .welcome { font-size:28px; }
+    .card { width:50px; height:75px; font-size:16px; }
+}
+
+input[type="number"] {
+    font-size:1em;
+    padding:12px 15px;
+    border-radius:12px;
+    border:2px solid #555;
+    background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+    color:white;
+    text-align:center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5),
+                inset 0 1px 2px rgba(255,255,255,0.05);
+    transition: 0.3s;
+    outline:none;
+}
+input[type="number"]:hover {
+    border-color: #ff4b2b;
+    box-shadow: 0 4px 15px rgba(255,75,43,0.4),
+                inset 0 1px 2px rgba(255,255,255,0.1);
+}
+input[type="number"]:focus {
+    border-color: #ffb347;
+    box-shadow: 0 0 12px rgba(255,179,71,0.7),
+                inset 0 1px 2px rgba(255,255,255,0.2);
+    background: linear-gradient(145deg, #2c2c2c, #121212);
+}
+
+/* --- Новый макет: игра и бонусы сверху, правила снизу --- */
+.topWrapper {
+  display:flex;
+  gap:20px;
+  justify-content:flex-start;
+  align-items:flex-start;
+  flex-wrap:nowrap;
+  width:100%;
+}
+
+.gameWrapper {
+  flex:1 1 600px;
+  background: rgba(0,0,0,0.5);
+  padding: 20px;
+  border-radius:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.6);
+}
+
+.bonusWrapper {
+  flex:0 0 300px;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  overflow:visible;
+}
+
+.rulesWrapper {
+  margin-top:20px;
+  background: rgba(255,255,255,0.05);
+  padding: 15px 20px;
+  border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.4);
+}
+
+.rulesWrapper h2 { color: #ffb347; margin-bottom:10px; }
+.rulesWrapper ul { list-style: disc; padding-left:20px; }
+.rulesWrapper li { color:white; margin-bottom:6px; }
+
+.bonusTable {
+    flex:1;
+    min-width:220px;
+    background: rgba(255,255,255,0.05);
+    border-radius:12px;
+    padding:10px;
+    margin:10px 0;
+    box-shadow:0 4px 10px rgba(0,0,0,0.3);
+}
+
+.bonusTable h3 {
+    text-align:center;
+    margin-bottom:10px;
+    font-size:1.2em;
+    color:#ffb347;
+    text-shadow:1px 1px 5px rgba(255,179,71,0.5);
+}
+
+.bonusTable table {
+    width:100%;
+    border-collapse:collapse;
+}
+
+.bonusTable th,
+.bonusTable td {
+    border:1px solid rgba(255,255,255,0.2);
+    padding:8px;
+    text-align:center;
+    font-weight:bold;
+    color:white;
+}
+
+.bonusTable th {
+    background: rgba(255,255,255,0.1);
+}
+
+@media screen and (max-width:768px){
+    .topWrapper { flex-direction:column; }
+    .bonusWrapper { max-width:100%; margin-top:20px; }
+}
+#playerComboText, #botComboText {
+    font-weight: bold;
+    font-size: 1.5em;
+    text-align: center;
+    margin-top: 15px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Цвета через классы */
+.win { color: #28a745; }   /* зеленый — лучшая комбинация */
+.lose { color: #e53935; }  /* красный — проигрыш */
+.tie { color: #f39c12; }   /* оранжевый — ничья */
+
+</style>
+</head>
+<body>
+<header>
+    <div class="welcome">Reaper<span> Casino</span></div>
+    <div class="navBalanceWrapper">
+        <div class="navLinks">
+            <a href="blackjack.html">🂡 Blackjack</a>
+            <a href="roulette.html">🎡 Рулетка</a>
+            <a href="index.html">🏠 Главная</a>
+        </div>
+        <div class="balanceDisplay">Баланс: <span id="uthBalance">10000</span></div>
+    </div>
+</header>
+
+<!-- Весь верхний блок: игра + бонусы -->
+<div class="topWrapper">
+  <!-- Левая часть — игра -->
+  <div class="gameWrapper">
+    <div>
+      <input type="number" id="bbBet" placeholder="BB Ставка">
+      <input type="number" id="anteBet" placeholder="Ante Ставка">
+      <input type="number" id="tripsBet" placeholder="TRIPS Ставка">
+      <input type="number" id="ultimateBet" placeholder="Ultimate Ставка">
+      <button id="startBtn">Начать игру</button>
+    </div>
+
+    <div class="cardsSection">
+      <h3>Ваши карты</h3>
+      <div class="cardsContainer" id="playerCards"></div>
+      <p id="playerComboText"></p>
+    </div>
+
+    <div class="cardsSection">
+      <h3>Карты бота</h3>
+      <div class="cardsContainer" id="botCards"></div>
+      <p id="botComboText"></p>
+    </div>
+
+    <div class="cardsSection">
+      <h3>Карты на столе</h3>
+      <div class="cardsContainer" id="tableCards"></div>
+    </div>
+
+    <div id="actionButtons"></div>
+    <p id="playerWinText"></p>
+  </div>
+
+  <!-- Правая колонка — бонусы -->
+  <div class="bonusWrapper">
+    <div class="bonusTable">
+        <h3>BB / TRIPS Bonus</h3>
+        <table>
+            <tr><th>Комбинация</th><th>BB</th><th>TRIPS</th></tr>
+            <tr><td>Сет</td><td>3x</td><td>3x</td></tr>
+            <tr><td>Стрит</td><td>4x</td><td>5x</td></tr>
+            <tr><td>Флеш</td><td>5x</td><td>7x</td></tr>
+            <tr><td>Фулл-хаус</td><td>7x</td><td>10x</td></tr>
+            <tr><td>Каре</td><td>20x</td><td>25x</td></tr>
+            <tr><td>Стрит-флеш</td><td>50x</td><td>40x</td></tr>
+            <tr><td>Роял-флеш</td><td>500x</td><td>70x</td></tr>
+        </table>
+    </div>
+
+    <div class="bonusTable">
+        <h3>Ultimate Bonus</h3>
+        <table>
+            <tr><th>Комбинация</th><th>Выплата</th></tr>
+            <tr><td>AA</td><td>30x</td></tr>
+            <tr><td>AK одномастные</td><td>25x</td></tr>
+            <tr><td>KK или QQ или JJ</td><td>15x</td></tr>
+            <tr><td>AK разномастные</td><td>10x</td></tr>
+        </table>
+    </div>
+  </div>
+</div>
+
+<!-- Правила — снизу -->
+<div class="rulesWrapper">
+  <h2>Правила Ultimate Texas Hold'em</h2>
+  <ul>
+    <li>Ставки BB и Ante должны быть равны.</li>
+    <li>На префлопе можно ставить 4x или чек.</li>
+    <li>На флопе можно ставить 2x или чек.</li>
+    <li>На терне и ривере можно ставить 1x или скинуть карты.</li>
+    <li>Выигрывает игрок с лучшей комбинацией по покерным правилам.</li>
+    <li>Если комбинации равны, учитывается старшая карта (кикер).</li>
+  </ul>
+</div>
+
+<button id="addFundsBtn">+10000</button>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reaper Casino - Ultimate Texas Hold'em</title>
+<style>
+body {
+    margin:0;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background: linear-gradient(135deg,#0b0c10,#1f2833);
+    color:white;
+}
+header {
+    padding:15px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+}
+.navLinks {
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+.navLinks a {
+    display:block;
+    padding:6px 12px;
+    border-radius:8px;
+    background:#555;
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+    text-align:center;
+    font-size:2em;
+    transition:0.2s;
+}
+.navLinks a:hover { background:#777; }
+.balanceDisplay {
+    padding:6px 12px;
+    border-radius:10px;
+    background: rgba(255,255,255,0.15);
+    color:white;
+    font-weight:bold;
+    font-size:1.2em;
+    text-align:center;
+}
+#addFundsBtn {
+    position:fixed;
+    right:15px;
+    bottom:15px;
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    background:#28a745;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 3px 10px rgba(0,0,0,0.4);
+    transition:0.2s;
+}
+#addFundsBtn:hover { background:#1e7e34; }
+
+.container {
+    max-width:800px;
+    margin:0px auto 30px auto;
+    background: rgba(0,0,0,0.5);
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.6);
+    text-align:center;
+}
+button {
+    font-size:1em;
+    padding:10px;
+    border-radius:10px;
+    border:none;
+    margin:5px;
+    cursor:pointer;
+    background:#555;
+    color:white;
+    font-weight:bold;
+    transition:0.2s;
+    box-shadow:0 3px 10px rgba(0,0,0,0.4);
+}
+button:hover { background:#777; }
+
+#playerWinText, #playerComboText, #botComboText {
+    margin-top:10px;
+    font-size:1.2em;
+    font-weight:bold;
+}
+
+.cardsContainer {
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin:10px 0;
+    flex-wrap:wrap;
+}
+.card {
+    width: 75px;
+    height: 110px;
+    border-radius: 14px;
+    background: linear-gradient(145deg,#1e1e1e,#111); /* темная карта */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: white; /* текст карты */
+    box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+    cursor: pointer;
+}
+.card.red { color: red; } /* красные карты */
+
+
+.card .corner {
+    font-size:14px;
+    font-weight:bold;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.card .corner.top-left {
+    position:absolute;
+    top:5px;
+    left:5px;
+    text-align:left;
+}
+
+.card .corner.bottom-right {
+    position:absolute;
+    bottom:5px;
+    right:5px;
+    transform: rotate(180deg);
+    text-align:right;
+}
+
+.card .center {
+    font-size:36px;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:1;
+}
+
+.card:hover {
+    transform: scale(1.1) rotateY(0deg);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.7);
+}
+
+/* Анимация переворота карты для бота */
+.card.flip {
+    background: linear-gradient(145deg, #222, #111);
+    color: white;
+}
+
+.card.red { color:red; }
+
+.welcome {
+    text-align:center;
+    font-size:48px;
+    font-weight:bold;
+    color:#ff4b2b;
+    text-shadow: 2px 2px 15px rgba(255,75,43,0.6), 0 0 20px rgba(255,75,43,0.4);
+}
+.welcome span {
+    color:#ffb347;
+    text-shadow: 2px 2px 20px rgba(255,179,71,0.5);
+}
+
+.navBalanceWrapper {
+    display:flex;
+    width:100%;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+}
+
+#actionButtons button {
+    min-width:100px;
+}
+
+@media screen and (max-width:768px){
+    .container { width:90%; padding:15px; }
+    input, button { font-size:0.9em; padding:8px; }
+    .balanceDisplay { font-size:1em; padding:5px 10px; }
+    .navLinks a { padding:5px 10px; font-size:1.2em; }
+    .welcome { font-size:36px; }
+}
+@media screen and (max-width:480px){
+    input, button { font-size:0.8em; padding:6px; }
+    .balanceDisplay { font-size:0.9em; padding:4px 8px; }
+    .navLinks a { padding:4px 8px; font-size:1em; }
+    .welcome { font-size:28px; }
+    .card { width:50px; height:75px; font-size:16px; }
+}
+
+input[type="number"] {
+    font-size:1em;
+    padding:12px 15px;
+    border-radius:12px;
+    border:2px solid #555;
+    background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+    color:white;
+    text-align:center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5),
+                inset 0 1px 2px rgba(255,255,255,0.05);
+    transition: 0.3s;
+    outline:none;
+}
+input[type="number"]:hover {
+    border-color: #ff4b2b;
+    box-shadow: 0 4px 15px rgba(255,75,43,0.4),
+                inset 0 1px 2px rgba(255,255,255,0.1);
+}
+input[type="number"]:focus {
+    border-color: #ffb347;
+    box-shadow: 0 0 12px rgba(255,179,71,0.7),
+                inset 0 1px 2px rgba(255,255,255,0.2);
+    background: linear-gradient(145deg, #2c2c2c, #121212);
+}
+
+/* --- Новый макет: игра и бонусы сверху, правила снизу --- */
+.topWrapper {
+  display:flex;
+  gap:20px;
+  justify-content:flex-start;
+  align-items:flex-start;
+  flex-wrap:nowrap;
+  width:100%;
+}
+
+.gameWrapper {
+  flex:1 1 600px;
+  background: rgba(0,0,0,0.5);
+  padding: 20px;
+  border-radius:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.6);
+}
+
+.bonusWrapper {
+  flex:0 0 300px;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  overflow:visible;
+}
+
+.rulesWrapper {
+  margin-top:20px;
+  background: rgba(255,255,255,0.05);
+  padding: 15px 20px;
+  border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.4);
+}
+
+.rulesWrapper h2 { color: #ffb347; margin-bottom:10px; }
+.rulesWrapper ul { list-style: disc; padding-left:20px; }
+.rulesWrapper li { color:white; margin-bottom:6px; }
+
+.bonusTable {
+    flex:1;
+    min-width:220px;
+    background: rgba(255,255,255,0.05);
+    border-radius:12px;
+    padding:10px;
+    margin:10px 0;
+    box-shadow:0 4px 10px rgba(0,0,0,0.3);
+}
+
+.bonusTable h3 {
+    text-align:center;
+    margin-bottom:10px;
+    font-size:1.2em;
+    color:#ffb347;
+    text-shadow:1px 1px 5px rgba(255,179,71,0.5);
+}
+
+.bonusTable table {
+    width:100%;
+    border-collapse:collapse;
+}
+
+.bonusTable th,
+.bonusTable td {
+    border:1px solid rgba(255,255,255,0.2);
+    padding:8px;
+    text-align:center;
+    font-weight:bold;
+    color:white;
+}
+
+.bonusTable th {
+    background: rgba(255,255,255,0.1);
+}
+
+@media screen and (max-width:768px){
+    .topWrapper { flex-direction:column; }
+    .bonusWrapper { max-width:100%; margin-top:20px; }
+}
+#playerComboText, #botComboText {
+    font-weight: bold;
+    font-size: 1.5em;
+    text-align: center;
+    margin-top: 15px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Цвета через классы */
+.win { color: #28a745; }   /* зеленый — лучшая комбинация */
+.lose { color: #e53935; }  /* красный — проигрыш */
+.tie { color: #f39c12; }   /* оранжевый — ничья */
+
+</style>
+</head>
+<body>
+<header>
+    <div class="welcome">Reaper<span> Casino</span></div>
+    <div class="navBalanceWrapper">
+        <div class="navLinks">
+            <a href="blackjack.html">🂡 Blackjack</a>
+            <a href="roulette.html">🎡 Рулетка</a>
+            <a href="index.html">🏠 Главная</a>
+        </div>
+        <div class="balanceDisplay">Баланс: <span id="uthBalance">10000</span></div>
+    </div>
+</header>
+
+<!-- Весь верхний блок: игра + бонусы -->
+<div class="topWrapper">
+  <!-- Левая часть — игра -->
+  <div class="gameWrapper">
+    <div>
+      <input type="number" id="bbBet" placeholder="BB Ставка">
+      <input type="number" id="anteBet" placeholder="Ante Ставка">
+      <input type="number" id="tripsBet" placeholder="TRIPS Ставка">
+      <input type="number" id="ultimateBet" placeholder="Ultimate Ставка">
+      <button id="startBtn">Начать игру</button>
+    </div>
+
+    <div class="cardsSection">
+      <h3>Ваши карты</h3>
+      <div class="cardsContainer" id="playerCards"></div>
+      <p id="playerComboText"></p>
+    </div>
+
+    <div class="cardsSection">
+      <h3>Карты бота</h3>
+      <div class="cardsContainer" id="botCards"></div>
+      <p id="botComboText"></p>
+    </div>
+
+    <div class="cardsSection">
+      <h3>Карты на столе</h3>
+      <div class="cardsContainer" id="tableCards"></div>
+    </div>
+
+    <div id="actionButtons"></div>
+    <p id="playerWinText"></p>
+  </div>
+
+  <!-- Правая колонка — бонусы -->
+  <div class="bonusWrapper">
+    <div class="bonusTable">
+        <h3>BB / TRIPS Bonus</h3>
+        <table>
+            <tr><th>Комбинация</th><th>BB</th><th>TRIPS</th></tr>
+            <tr><td>Сет</td><td>3x</td><td>3x</td></tr>
+            <tr><td>Стрит</td><td>4x</td><td>5x</td></tr>
+            <tr><td>Флеш</td><td>5x</td><td>7x</td></tr>
+            <tr><td>Фулл-хаус</td><td>7x</td><td>10x</td></tr>
+            <tr><td>Каре</td><td>20x</td><td>25x</td></tr>
+            <tr><td>Стрит-флеш</td><td>50x</td><td>40x</td></tr>
+            <tr><td>Роял-флеш</td><td>500x</td><td>70x</td></tr>
+        </table>
+    </div>
+
+    <div class="bonusTable">
+        <h3>Ultimate Bonus</h3>
+        <table>
+            <tr><th>Комбинация</th><th>Выплата</th></tr>
+            <tr><td>AA</td><td>30x</td></tr>
+            <tr><td>AK одномастные</td><td>25x</td></tr>
+            <tr><td>KK или QQ или JJ</td><td>15x</td></tr>
+            <tr><td>AK разномастные</td><td>10x</td></tr>
+        </table>
+    </div>
+  </div>
+</div>
+
+<!-- Правила — снизу -->
+<div class="rulesWrapper">
+  <h2>Правила Ultimate Texas Hold'em</h2>
+  <ul>
+    <li>Ставки BB и Ante должны быть равны.</li>
+    <li>На префлопе можно ставить 4x или чек.</li>
+    <li>На флопе можно ставить 2x или чек.</li>
+    <li>На терне и ривере можно ставить 1x или скинуть карты.</li>
+    <li>Выигрывает игрок с лучшей комбинацией по покерным правилам.</li>
+    <li>Если комбинации равны, учитывается старшая карта (кикер).</li>
+  </ul>
+</div>
+
+<button id="addFundsBtn">+10000</button>
+<script>
+let totalBalance = 10000;
+
+document.getElementById("addFundsBtn").onclick = () => {
+    totalBalance += 10000;
+    updateBalance();
+};
+
+function updateBalance() {
+    document.getElementById("uthBalance").innerText = totalBalance;
+}
+updateBalance();
+
+// ===== UTH SCRIPT START =====
+let deck=[], player=[], bot=[], table=[];
+let bbBet=0, anteBet=0, tripsBet=0, ultimateBet=0;
+let stage="", currentPlayBet=0;
+const pokerSuits=["♠","♥","♦","♣"];
+const pokerRanks=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+
+document.getElementById("startBtn").onclick=startPoker;
+
+function createDeck(){
+    let d=[];
+    for(let s of pokerSuits) for(let r of pokerRanks) d.push(r+s);
+    return d.sort(()=>Math.random()-0.5);
+}
+
+function deal(n){
+    return deck.splice(0,n);
+}
+
+// Отображаем карты без анимации и с прежним дизайном
+function displayCards(id, cards){
+    const container = document.getElementById(id);
+    container.innerHTML = "";
+    cards.forEach(card => {
+        const div = document.createElement("div");
+        div.className = "card";
+        if(card.includes("♥") || card.includes("♦")) div.classList.add("red");
+        div.innerText = card;
+        container.appendChild(div);
+    });
+}
+
+
+function evaluateHand(cards){
+    const values=cards.map(c=>pokerRanks.indexOf(c.slice(0,-1))).sort((a,b)=>b-a);
+    const suits=cards.map(c=>c.slice(-1));
+    const counts={};
+    values.forEach(v=>counts[v]=(counts[v]||0)+1);
+    const pairs=Object.keys(counts).filter(k=>counts[k]===2).map(Number).sort((a,b)=>b-a);
+    const three=Object.keys(counts).filter(k=>counts[k]===3).map(Number);
+    const four=Object.keys(counts).filter(k=>counts[k]===4).map(Number);
+    const flushSuit=suits.find(s=>suits.filter(x=>x===s).length>=5);
+    const flushValues=flushSuit?cards.filter(c=>c.slice(-1)===flushSuit).map(c=>pokerRanks.indexOf(c.slice(0,-1))).sort((a,b)=>b-a):[];
+    const uniq=[...new Set(values)].sort((a,b)=>b-a);
+    let straight=false;
+    for(let i=0;i<=uniq.length-5;i++){if(uniq[i]-uniq[i+4]===4) straight=true;}
+    if(uniq.includes(12)&&uniq.includes(0)&&uniq.includes(1)&&uniq.includes(2)&&uniq.includes(3)) straight=true; 
+    if(four.length) return {score:7,name:"Каре",ranks:[...Array(4).fill(four[0]),...values.filter(v=>v!==four[0])]};
+    if(three.length&&pairs.length>=1) return {score:6,name:"Фулл-хаус",ranks:[...Array(3).fill(three[0]),...Array(2).fill(pairs[0])]};
+    if(flushSuit) return {score:5,name:"Флеш",ranks:flushValues};
+    if(straight) return {score:4,name:"Стрит",ranks:uniq.slice(0,5)};
+    if(three.length) return {score:3,name:"Сет",ranks:[...Array(3).fill(three[0]),...values.filter(v=>v!==three[0])]};
+    if(pairs.length>=2) return {score:2,name:"Две пары",ranks:[...Array(2).fill(pairs[0]),...Array(2).fill(pairs[1]),...values.filter(v=>v!==pairs[0]&&v!==pairs[1])]};
+    if(pairs.length===1) return {score:1,name:"Пара",ranks:[...Array(2).fill(pairs[0]),...values.filter(v=>v!==pairs[0])]};
+    return {score:0,name:"Старшая карта",ranks:values};
+}
+
+function compareHands(playerEval, botEval) {
+    if (playerEval.score > botEval.score) return 1;
+    if (playerEval.score < botEval.score) return -1;
+    for (let i = 0; i < playerEval.ranks.length; i++) {
+        if (playerEval.ranks[i] > botEval.ranks[i]) return 1;
+        if (playerEval.ranks[i] < botEval.ranks[i]) return -1;
+    }
+    return 0;
+}
+
+// Показываем текущую комбинацию игрока на флопе/терне/ривере
+function showCurrentPlayerCombo() {
+    const visibleCards = [...player];
+    if(stage === "flop") visibleCards.push(...table.slice(0,3));
+    else if(stage === "turn" || stage === "river" || stage === "showdown") visibleCards.push(...table);
+
+    const currentEval = evaluateHand(visibleCards);
+    const playerComboEl = document.getElementById("playerComboText");
+    playerComboEl.innerText = currentEval.name;
+    playerComboEl.style.color = "white"; // название комбинации белое
+}
+
+function startPoker(){
+    document.getElementById("playerWinText").innerText="";
+    document.getElementById("playerComboText").innerText="";
+    document.getElementById("botComboText").innerText="";
+    document.getElementById("actionButtons").innerHTML="";
+    bbBet=parseInt(document.getElementById("bbBet").value);
+    anteBet=parseInt(document.getElementById("anteBet").value);
+    tripsBet=parseInt(document.getElementById("tripsBet").value)||0;
+    ultimateBet=parseInt(document.getElementById("ultimateBet").value)||0;
+    if(bbBet!==anteBet){alert("BB и Ante должны быть равны"); return;}
+    if(bbBet<=0||bbBet+anteBet+tripsBet+ultimateBet>totalBalance){alert("Недостаточно средств"); return;}
+    totalBalance-=(bbBet+anteBet+tripsBet+ultimateBet);
+    updateBalance();
+    deck=createDeck();
+    player=deal(2);
+    bot=deal(2);
+    table=deal(5);
+    displayCards("playerCards",player);
+    displayCards("botCards",["🂠","🂠"]);
+    displayCards("tableCards",[]);
+    stage="preflop";
+    currentPlayBet=0;
+    showButtons("Префлоп: 4x или чек",4);
+}
+
+function showButtons(text,mult,allowFold=false,showCheck=true){
+    const div=document.getElementById("actionButtons");
+    div.innerHTML=`<p>${text}</p>`;
+    if(mult>0){const btn=document.createElement("button");btn.innerText=`Ставка ${mult}x`;btn.onclick=()=>playerMove(mult);div.appendChild(btn);}
+    if(showCheck){const btn=document.createElement("button");btn.innerText="Пропустить";btn.onclick=()=>playerMove(0);div.appendChild(btn);}
+    if(allowFold){const btn=document.createElement("button");btn.innerText="Скинуть карты";btn.onclick=()=>foldPoker();div.appendChild(btn);}
+}
+
+function playerMove(mult){
+    if(mult>0){let stake=bbBet*mult;if(stake>totalBalance){alert("Недостаточно средств"); return;} totalBalance-=stake; updateBalance(); currentPlayBet+=stake;}
+    
+    if(stage==="preflop"){
+        if(mult===4){ stage="showdown"; displayCards("tableCards",table); finishPoker(); return; }
+        stage="flop"; 
+        displayCards("tableCards", table.slice(0,3)); 
+        showButtons("Флоп: ставка 2x или чек",2,false,true);
+        showCurrentPlayerCombo();
+    }
+    else if(stage==="flop"){
+        if(mult===2){ stage="showdown"; displayCards("tableCards",table); finishPoker(); return; }
+        stage="turn"; 
+        displayCards("tableCards",table);
+        showButtons("Терн и Ривер: ставка 1x или скинуть карты",1,true,false);
+        showCurrentPlayerCombo();
+    }
+    else if(stage==="turn"){
+        stage="showdown";
+        displayCards("tableCards",table);
+        showCurrentPlayerCombo();
+        finishPoker();
+    }
+}
+
+function foldPoker() {
+    displayCards("botCards", bot);
+    const winText = document.getElementById("playerWinText");
+    winText.style.color = "red";
+    winText.innerText = "😢 Вы скинули карты. Ставки потеряны.";
+    document.getElementById("actionButtons").innerHTML = "";
+    const div = document.getElementById("actionButtons");
+    const btnRestart = document.createElement("button");
+    btnRestart.innerText = "Начать новую игру";
+    btnRestart.onclick = startPoker;
+    div.appendChild(btnRestart);
+}
+function finishPoker() {
+    // Показываем карты бота
+    displayCards("botCards", bot);
+
+    // Оцениваем комбинации
+    const playerEval = evaluateHand(player.concat(table));
+    const botEval = evaluateHand(bot.concat(table));
+
+    // Сравниваем комбинации
+    const cmp = compareHands(playerEval, botEval);
+    const playerWins = cmp === 1;
+    const tie = cmp === 0;
+
+    // Отображаем комбинации
+    const playerComboEl = document.getElementById("playerComboText");
+    const botComboEl = document.getElementById("botComboText");
+    playerComboEl.innerText = playerEval.name;
+    botComboEl.innerText = botEval.name;
+
+    // Сброс цвета и установка классов
+    playerComboEl.style.color = "";
+    botComboEl.style.color = "";
+    if (tie) { 
+        playerComboEl.className = botComboEl.className = "tie"; 
+    } else if (playerWins) { 
+        playerComboEl.className = "win"; 
+        botComboEl.className = "lose"; 
+    } else { 
+        playerComboEl.className = "lose"; 
+        botComboEl.className = "win"; 
+    }
+
+    // Вычисление выигрышей
+    let totalWin = 0, messages = [];
+
+    // BB ставка
+    const bbMultipliers = {"Пара":1,"Сет":3,"Стрит":4,"Флеш":5,"Фулл-хаус":7,"Каре":20,"Стрит-флеш":50,"Роял-флеш":500};
+    let mult = bbMultipliers[playerEval.name] || 0;
+    if (mult > 0 && playerWins) { 
+        let win = currentPlayBet * mult; 
+        totalWin += win; 
+        messages.push(`BB ${mult}x: ${win}`); 
+    }
+
+    // Ante
+    if (playerWins) { 
+        let anteWin = anteBet * 2; 
+        totalWin += anteWin; 
+        messages.push(`Ante: ${anteWin}`); 
+    }
+
+    // TRIPS
+    const tripsMultipliers = {"Сет":3,"Стрит":5,"Флеш":7,"Фулл-хаус":10,"Каре":25,"Стрит-флеш":40,"Роял-флеш":70};
+    mult = tripsMultipliers[playerEval.name] || 0;
+    if (mult > 0 && tripsBet > 0) { 
+        let win = tripsBet * mult; 
+        totalWin += win; 
+        messages.push(`TRIPS ${mult}x: ${win}`); 
+    }
+
+    // Ultimate
+    const ultimateMultipliers = {"AA":30,"AKs":25,"AK":10,"KKQJ":15};
+    let ultMult = evaluateUltimate(player);
+    if (ultimateBet > 0 && ultMult > 0) { 
+        let win = ultimateBet * ultMult; 
+        totalWin += win; 
+        messages.push(`ULTIMATE ${ultMult}x: ${win}`); 
+    }
+
+    // Обновление баланса
+    totalBalance += totalWin;
+    updateBalance();
+
+    // Вывод результата
+    const el = document.getElementById("playerWinText");
+    if (totalWin > 0) {
+        el.style.color = "#28a745"; // зеленый
+        el.innerText = `🎉 Вы выиграли: ${totalWin} | ${messages.join(" | ")}`;
+    } else if (tie) {
+        el.style.color = "#f39c12"; // оранжевый
+        el.innerText = `🤝 Ничья. Ставки возвращены`;
+        totalBalance += bbBet + anteBet + currentPlayBet; // вернуть ставки
+        updateBalance();
+    } else {
+        el.style.color = "#e53935"; // красный
+        el.innerText = `😢 Вы проиграли`;
+    }
+
+    // Кнопка "Начать новую игру"
+    const div = document.getElementById("actionButtons");
+    div.innerHTML = "";
+    const btnRestart = document.createElement("button");
+    btnRestart.innerText = "Начать новую игру";
+    btnRestart.onclick = startPoker;
+    div.appendChild(btnRestart);
+}
+
+function evaluateUltimate(playerCards){
+    const [c1,c2]=playerCards;
+    const r1=c1.slice(0,-1), s1=c1.slice(-1);
+    const r2=c2.slice(0,-1), s2=c2.slice(-1);
+    if(r1==="A"&&r2==="A") return 30;
+    if(((r1==="A"&&r2==="K")||(r1==="K"&&r2==="A"))&&s1===s2) return 25;
+    if((r1==="A"&&r2==="K")||(r1==="K"&&r2==="A")) return 10;
+    if(r1===r2&&(r1==="K"||r1==="Q"||r1==="J")) return 15;
+    return 0;
+}
+// ===== UTH SCRIPT END =====
+</script>
+</body>
+</html>
+
+</body>
+</html>
