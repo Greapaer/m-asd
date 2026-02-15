@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reaper Casino - Рулетка</title>
+<style>
+body {
+    margin:0;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background: linear-gradient(90deg,#0b0c10,#1f2833);
+    color:white;
+}
+header {
+    padding:15px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+}
+.navLinks {
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.navLinks a {
+    display:block;
+    padding:6px 12px;
+    border-radius:8px;
+    background:#555;
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+    text-align:center;
+    font-size:1.8em;
+    transition:0.2s;
+}
+
+.navLinks a:hover { background:#777; }
+
+.balanceDisplay {
+    padding:6px 12px;
+    border-radius:10px;
+    background: rgba(255,255,255,0.15);
+    color:white;
+    font-weight:bold;
+    font-size:1.2em;
+    text-align:center;
+}
+
+#addFundsBtn {
+    position:fixed;
+    right:15px;
+    bottom:15px;
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    background:#28a745;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 3px 10px rgba(0,0,0,0.4);
+    transition:0.2s;
+}
+#addFundsBtn:hover { background:#1e7e34; }
+.container {
+    max-width:700px;
+    margin:80px auto 30px auto;
+    background: rgba(0,0,0,0.5);
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.6);
+    text-align:center;
+}
+input, button {
+    font-size:1em;
+    padding:10px;
+    border-radius:10px;
+    border:none;
+    margin:5px;
+}
+button {
+    cursor:pointer;
+    background:#555;
+    color:white;
+    font-weight:bold;
+    transition:0.2s;
+    box-shadow:0 3px 10px rgba(0,0,0,0.4);
+}
+button:hover { background:#777; }
+#rouletteWinText {
+    margin-top:10px;
+    font-size:1.2em;
+    font-weight:bold;
+}
+.rouletteHistoryStrip {
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:20px;
+}
+.historyCard {
+    width:50px;
+    height:50px;
+    border-radius:10px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+    color:white;
+    font-size:18px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.5);
+    transition:0.2s;
+}
+.red { background:#e53935; }
+.black { background:#222; }
+.green { background:#28a745; }
+.yellow { background: #f1c40f !important; color:black; }
+
+@media screen and (max-width:768px){
+    .container { width:90%; padding:15px; }
+    .historyCard { width:45px; height:45px; font-size:16px; }
+    input, button { font-size:0.9em; padding:8px; }
+    .balanceDisplay { font-size:1em; padding:5px 10px; }
+    .navLinks a { padding:5px 10px; font-size:0.85em; }
+    .welcome { font-size:1.5em; }
+}
+@media screen and (max-width:480px){
+    .historyCard { width:40px; height:40px; font-size:14px; }
+    input, button { font-size:0.8em; padding:6px; }
+    header { font-size:1.5em; }
+    .balanceDisplay { font-size:0.9em; padding:4px 8px; }
+    .navLinks a { padding:4px 8px; font-size:0.8em; }
+    .welcome { font-size:1.2em; }
+}
+.welcome {
+    text-align:center;
+    font-size:48px;
+    font-weight:bold;
+    color:#ff4b2b;
+    text-shadow: 2px 2px 15px rgba(255,75,43,0.6), 0 0 20px rgba(255,75,43,0.4);
+}
+.welcome span {
+    color:#ffb347;
+    text-shadow: 2px 2px 20px rgba(255,179,71,0.5);
+}
+.navBalanceWrapper {
+    display:flex;
+    width:100%;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+}
+</style>
+</head>
+<body>
+<header>
+    <div class="welcome">Reaper<span> Casino</span></div>
+    <div class="navBalanceWrapper">
+        <div class="navLinks">
+            <a href="blackjack.html">🂡 Blackjack</a>
+            <a href="poker.html">🃏 Покер</a>
+            <a href="index.html">🏠 Главная</a>
+        </div>
+        <div class="balanceDisplay">Баланс: <span id="rouletteBalance">10000</span></div>
+    </div>
+</header>
+
+<div class="container">
+    <input type="number" id="rouletteNumber" placeholder="Число 0-36">
+    <input type="number" id="rouletteBet" placeholder="Ставка">
+    <button onclick="playRoulette()">Крутить</button>
+    
+    <p id="rouletteWinText"></p>
+    <div class="rouletteHistoryStrip" id="rouletteHistory"></div>
+</div>
+
+<button id="addFundsBtn">+10000</button>
+
+<script>
+let balance = 10000;
+let lastNumbers = [];
+
+const balanceDisplay = document.getElementById("rouletteBalance");
+const rouletteHistory = document.getElementById("rouletteHistory");
+const rouletteWinText = document.getElementById("rouletteWinText");
+const rouletteNumberInput = document.getElementById("rouletteNumber");
+const rouletteBetInput = document.getElementById("rouletteBet");
+
+document.getElementById("addFundsBtn").onclick = () => { 
+    balance += 10000; 
+    updateBalance(); 
+};
+
+function updateBalance(){ 
+    balanceDisplay.innerText = balance; 
+}
+
+function getColor(num){ 
+    if(num===0) return "green"; 
+    const redNumbers = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+    return redNumbers.includes(num) ? "red" : "black"; 
+}
+
+function updateRouletteHistory(userNum){
+    rouletteHistory.innerHTML="";
+    const recent = lastNumbers.slice(-10);
+    recent.forEach(num=>{
+        const div=document.createElement("div");
+        let colorClass = getColor(num);
+        if(num===userNum) colorClass="yellow";
+        div.className="historyCard " + colorClass;
+        div.innerText = num;
+        rouletteHistory.appendChild(div);
+    });
+}
+
+function playRoulette(){
+    const num = parseInt(rouletteNumberInput.value);
+    const bet = parseInt(rouletteBetInput.value);
+    rouletteWinText.innerText="";
+
+    if(isNaN(num) || num<0 || num>36){ alert("Введите число 0-36"); return; }
+    if(isNaN(bet) || bet<=0 || bet>balance){ alert("Недостаточно средств"); return; }
+
+    balance -= bet;
+
+    const result = Math.floor(Math.random()*37);
+    lastNumbers.push(result);
+
+    updateBalance();
+    updateRouletteHistory(num);
+
+    if(result === num){
+        const win = bet*36; // стандартная выплата рулетки x36
+        balance += win;
+        updateBalance();
+        rouletteWinText.innerText = `🎉 Вы выиграли: ${win}`;
+    } else {
+        rouletteWinText.innerText = `💀 Вы проиграли: ${bet}`;
+    }
+}
+
+updateBalance();
+updateRouletteHistory();
+</script>
+
+</body>
+</html>

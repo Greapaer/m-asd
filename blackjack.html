@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Reaper Casino - Blackjack</title>
+<style>
+body {
+    margin:0;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background: linear-gradient(135deg,#0b0c10,#1f2833);
+    color:white;
+}
+header {
+    padding:15px;
+    font-size:2em;
+    text-align:center;
+    color:#fff;
+    font-weight:bold;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    position:relative;
+}
+
+.navBalanceWrapper {
+    display:flex;
+    width:100%;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+}
+
+.navLinks {
+    display:flex;
+    flex-direction:column; /* Столбик */
+    gap:6px;
+}
+
+.navLinks a {
+    display:block;
+    padding:6px 12px; /* меньше кнопки */
+    border-radius:8px; /* чуть меньше закругление */
+    background: #555;
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+    text-align:center;
+    font-size:0.9em; /* уменьшенный шрифт */
+    transition:0.2s;
+}
+
+.navLinks a:hover { background:#777; }
+
+.balanceDisplay {
+    padding:6px 12px;
+    border-radius:10px;
+    background: rgba(255,255,255,0.15);
+    color:white;
+    font-weight:bold;
+    font-size:0.7em;
+    text-align:center;
+}
+
+#addFundsBtn {
+    position:fixed;
+    right:15px;
+    bottom:15px;
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    background:#28a745;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 3px 10px rgba(0,0,0,0.4);
+    transition:0.2s;
+}
+#addFundsBtn:hover { background:#1e7e34; }
+
+.container {
+    display:flex;
+    max-width:1000px;
+    margin:20px auto 80px auto;
+    gap:20px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+.gameArea {
+    flex:2;
+    min-width:280px;
+    background: rgba(0,0,0,0.5);
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.6);
+}
+
+input[type="number"] {
+    padding:10px;
+    border-radius:12px;
+    border:none;
+    width:120px;
+    font-size:1em;
+    text-align:center;
+    margin:5px;
+}
+
+.cardsContainer {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 10px 0 20px 0;
+    flex-wrap: wrap;
+}
+
+.card {
+    width: 75px;
+    height: 110px;
+    border-radius: 14px;
+    background: linear-gradient(145deg,#1e1e1e,#111);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    font-weight: bold;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+    color: white;
+    opacity: 0;
+    transform: translateY(-40px);
+    transition: all 0.5s ease;
+}
+.card.show { opacity: 1; transform: translateY(0); }
+
+button {
+    cursor:pointer;
+    background:#555;
+    color:white;
+    font-weight:bold;
+    padding:10px 18px;
+    border-radius:12px;
+    border:none;
+    margin:5px;
+    box-shadow:0 3px 10px rgba(0,0,0,0.4);
+    transition:0.2s;
+}
+button:hover { background:#777; }
+
+#bjGameResult { margin-top:10px; font-size:1.3em; font-weight:bold; }
+
+.bonusTable {
+    flex:1;
+    min-width:220px;
+    background: rgba(255,255,255,0.05);
+    border-radius:12px;
+    padding:10px;
+    overflow-x:auto;
+}
+.bonusTable h3 { text-align:center; margin-bottom:10px; }
+.bonusTable table { width:100%; border-collapse:collapse; }
+.bonusTable th, .bonusTable td { border:1px solid rgba(255,255,255,0.2); padding:8px; text-align:center; }
+.bonusTable th { background:rgba(255,255,255,0.1); }
+
+@media screen and (max-width:768px){
+    header { font-size:1.5em; }
+    .card { width:60px; height:90px; font-size:1em; }
+    input[type="number"] { width:100px; }
+    .container { flex-direction:column; align-items:center; }
+    #addFundsBtn { padding:8px 16px; font-size:0.9em; }
+    .navLinks a { padding:5px 10px; font-size:0.85em; }
+}
+@media screen and (max-width:480px){
+    header { font-size:1.2em; }
+    .card { width:45px; height:65px; font-size:0.9em; }
+    .navLinks a { padding:4px 8px; font-size:0.8em; }
+    input[type="number"] { width:80px; font-size:0.9em; }
+    header { font-size:1.2em; }
+    #addFundsBtn { padding:6px 12px; font-size:0.8em; }
+    .bonusTable { min-width:180px; font-size:0.85em; }
+}
+.welcome {
+    text-align:center;
+    font-size:48px;
+    font-weight:bold;
+    color:#ff4b2b;
+    text-shadow: 2px 2px 15px rgba(255,75,43,0.6), 0 0 20px rgba(255,75,43,0.4);
+}
+.welcome span {
+    color:#ffb347;
+    text-shadow: 2px 2px 20px rgba(255,179,71,0.5);
+}
+</style>
+</head>
+<body>
+
+<header>
+    
+<div class="welcome">Reaper<span> Casino</span></div>
+    🂡 Blackjack
+    <div class="navBalanceWrapper">
+        <div class="navLinks">
+            <a href="roulette.html">🎡 Рулетка</a>
+            <a href="poker.html">🃏 Покер</a>
+            <a href="index.html">🏠 Главная</a>
+        </div>
+        <div class="balanceDisplay">Баланс: <span id="bjBalance">10000</span></div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="bonusTable">
+        <h3>Ultimate Bonus</h3>
+        <table>
+            <tr><th>Комбинация</th><th>Выплата</th></tr>
+            <tr><td>7♦ 7♦ + 7♦ у дилера</td><td>1000x</td></tr>
+            <tr><td>K♠K♠ + BJ дилера</td><td>1000x</td></tr>
+            <tr><td>K♠K♠</td><td>100x</td></tr>
+            <tr><td>♠7 ♣7 ♦7 (разные масти)</td><td>50x</td></tr>
+            <tr><td>KK одномастные</td><td>30x</td></tr>
+            <tr><td>QQ одномастные</td><td>25x</td></tr>
+            <tr><td>JJ одномастные</td><td>25x</td></tr>
+        </table>
+    </div>
+
+    <div class="gameArea">
+        <input type="number" id="bjBet" placeholder="Ставка">
+        <input type="number" id="bjUltimateBet" placeholder="Ultimate Bet">
+        <button onclick="startBJ()">Играть</button>
+
+        <div>
+            <h3>Ваши карты <span id="bjPlayerTotal">Сумма: 0</span></h3>
+            <div class="cardsContainer" id="bjPlayerCards"></div>
+        </div>
+
+        <div>
+            <h3>Карты дилера <span id="bjDealerTotal">Сумма: ?</span></h3>
+            <div class="cardsContainer" id="bjDealerCards"></div>
+        </div>
+
+        <div id="bjActionButtons"></div>
+        <div id="bjGameResult"></div>
+    </div>
+</div>
+
+<button id="addFundsBtn">+10000</button>
+
+
+<script>
+let bjBalance = 10000;
+let bjDeck = [];
+let bjHands = [];
+let bjDealer = [];
+let currentHandIndex = 0;
+let gameOver = true;
+let currentWin = 0; 
+
+const suits=["♠","♥","♦","♣"];
+const ranks=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+
+function createDeck(){
+    let deck=[];
+    for(let i=0;i<3;i++){
+        for(let s of suits){
+            for(let r of ranks){
+                deck.push(r+s);
+            }
+        }
+    }
+    return deck.sort(()=>Math.random()-0.5);
+}
+
+function deal(){
+    if(bjDeck.length<20) bjDeck=createDeck();
+    return bjDeck.pop();
+}
+
+function updateBalance(){
+    document.getElementById("bjBalance").innerText=bjBalance;
+}
+
+function cardValue(card){
+    let r=card.slice(0,-1);
+    if(r==="A") return 11;
+    if(["K","Q","J"].includes(r)) return 10;
+    return parseInt(r);
+}
+
+function getTotal(cards){
+    let total=0, aces=0;
+    cards.forEach(c=>{
+        total+=cardValue(c);
+        if(c.startsWith("A")) aces++;
+    });
+    while(total>21 && aces>0){
+        total-=10;
+        aces--;
+    }
+    return total;
+}
+
+function clearBoard(){
+    document.getElementById("bjPlayerCards").innerHTML="";
+    document.getElementById("bjDealerCards").innerHTML="";
+}
+
+async function startBJ(){
+    let bet = parseInt(document.getElementById("bjBet").value) || 0;
+    let ultimateBet = parseInt(document.getElementById("bjUltimateBet").value) || 0;
+
+    if(bet <= 0 || bet > bjBalance){
+        alert("Недостаточно средств для основной ставки");
+        return;
+    }
+    if(ultimateBet < 0 || ultimateBet > bjBalance){
+        alert("Недостаточно средств для Ultimate ставки");
+        return;
+    }
+
+    // списываем отдельно
+    bjBalance -= bet;
+    bjBalance -= ultimateBet;
+    updateBalance();
+
+    bjHands = [{cards:[], bet:bet, ultimateBet: ultimateBet}];
+    currentHandIndex = 0;
+    gameOver = false;
+    currentWin = 0;
+
+    document.getElementById("bjGameResult").innerText = "";
+    document.getElementById("bjActionButtons").innerHTML = "";
+    clearBoard();
+
+    bjDeck = createDeck();
+    bjDealer = [];
+
+    await dealCardToPlayer();
+    await sleep(1200);
+
+    await dealCardToDealer(true);
+    await sleep(1200);
+
+    await dealCardToPlayer();
+    await sleep(1200);
+
+    await dealCardToDealer(true);
+
+    updateTotals();
+
+    // Проверка на Blackjack
+    if(getTotal(bjHands[0].cards) === 21){
+        await sleep(500);
+        bjBalance += bet * 2.5; 
+        document.getElementById("bjGameResult").innerText = `🎉 Blackjack! Вы выиграли: ${bet*2.5 + (ultimateBet>0? ultimateBet*2.5:0)}`;
+        endGame();
+        return;
+    }
+
+    showButtons();
+}
+
+async function dealCardToPlayer(){
+    let card=deal(); 
+    bjHands[0].cards.push(card);
+    const container=document.getElementById("bjPlayerCards");
+    let cardEl=document.createElement("div"); 
+    cardEl.className="card"; 
+    cardEl.textContent=card;
+    if(card.includes("♥")||card.includes("♦")) cardEl.style.color="red";
+    container.appendChild(cardEl); 
+    await sleep(50); 
+    cardEl.classList.add("show");
+    updateTotals();
+}
+
+async function dealCardToDealer(hide){
+    let card=deal(); 
+    bjDealer.push(card);
+    const container=document.getElementById("bjDealerCards");
+    let cardEl=document.createElement("div"); 
+    cardEl.className="card";
+    if(bjDealer.length===1 || !hide){ 
+        cardEl.textContent=card; 
+        if(card.includes("♥")||card.includes("♦")) cardEl.style.color="red";
+    } else { 
+        cardEl.textContent="🂠"; 
+    }
+    container.appendChild(cardEl); 
+    await sleep(50); 
+    cardEl.classList.add("show");
+    updateTotals(true);
+}
+
+function updateTotals(hideDealer=true){
+    document.getElementById("bjPlayerTotal").innerText="Сумма: "+getTotal(bjHands[0].cards);
+    document.getElementById("bjDealerTotal").innerText=(gameOver || !hideDealer)?"Сумма: "+getTotal(bjDealer):"Сумма: ?";
+}
+
+function showButtons(){
+    document.getElementById("bjActionButtons").innerHTML=`
+        <button style="background:#2ecc71" onclick="hit()">Взять</button>
+        <button style="background:#3498db" onclick="stand()">Стоп</button>
+        <button style="background:#f39c12" onclick="doubleBet()">Удвоить</button>
+    `;
+}
+
+async function hit(){
+    await dealCardToPlayer();
+    const total=getTotal(bjHands[currentHandIndex].cards);
+
+    if(total>21){
+        document.getElementById("bjGameResult").innerText="❌ Перебор!";
+        document.getElementById("bjActionButtons").innerHTML="";
+        finishRound();
+    } else if(total===21){
+        document.getElementById("bjActionButtons").innerHTML="";
+        await stand();
+    }
+}
+
+async function stand() {
+    // Прячем кнопки сразу
+    document.getElementById("bjActionButtons").innerHTML = "";
+
+    gameOver = true;
+
+    // Открываем вторую карту дилера
+    const dealerCards = document.querySelectorAll("#bjDealerCards .card");
+    if(dealerCards.length >= 2){
+        dealerCards[1].textContent = bjDealer[1];
+        if(bjDealer[1].includes("♥") || bjDealer[1].includes("♦")){
+            dealerCards[1].style.color = "red";
+        }
+    }
+
+    updateTotals(false);
+
+    await sleep(1000);
+
+    // Дилер берет карты до 17
+    while(getTotal(bjDealer) < 17){
+        await dealCardToDealer(false);
+        await sleep(1200);
+    }
+
+    finishRound();
+}
+
+async function doubleBet(){
+    let hand=bjHands[0];
+    if(bjBalance<hand.bet){
+        alert("Недостаточно средств");
+        return;
+    }
+    bjBalance-=hand.bet;
+    hand.bet*=2;
+    updateBalance();
+    document.getElementById("bjActionButtons").innerHTML="";
+    await dealCardToPlayer();
+    if(getTotal(hand.cards)<=21){
+        await stand();
+    } else{
+        document.getElementById("bjGameResult").innerText="❌ Перебор!";
+        endGame();
+    }
+}
+
+function finishRound(){
+    let hand=bjHands[0];
+    let playerTotal=getTotal(hand.cards);
+    let dealerTotal=getTotal(bjDealer);
+    let result="";
+    currentWin = 0;
+
+    if(playerTotal>21){
+        result=`Вы проиграли`;
+    } else if(dealerTotal>21 || playerTotal>dealerTotal){
+        currentWin = hand.bet*2;
+        bjBalance+=currentWin;
+        result=`Вы выиграли ${currentWin}$`;
+    } else if(playerTotal===dealerTotal){
+        currentWin = hand.bet;
+        bjBalance+=currentWin;
+        result='Ничья';
+    } else {
+        result=`Вы проиграли`;
+    }
+
+    updateBalance();
+    document.getElementById("bjGameResult").innerText=result;
+    checkUltimateBonus();
+    endGame();
+}
+
+function checkUltimateBonus(){
+    let hand = bjHands[0];
+    if(hand.ultimateBet<=0) return;
+
+    let cards=hand.cards;
+    let payout=0;
+    // пример: 2 семерки
+    if(cards[0].startsWith("7") && cards[1].startsWith("7")){
+        payout = 50*hand.ultimateBet;
+    }
+
+    if(payout>0){
+        bjBalance+=payout;
+        document.getElementById("bjGameResult").innerText += ` | Ultimate выигрыш: ${payout}`;
+    }
+    updateBalance();
+}
+
+function endGame(){
+    document.getElementById("bjActionButtons").innerHTML=`<button style="background:green" onclick="startBJ()">Играть снова</button>`;
+}
+
+document.getElementById("addFundsBtn").onclick=()=>{ bjBalance+=10000; updateBalance(); }
+function sleep(ms){ return new Promise(resolve=>setTimeout(resolve,ms)); }
+
+updateBalance();
+</script>
+</body>
+</html>
